@@ -4,12 +4,22 @@
     </div>
 </template>
 <script>
+    import {mapState} from 'vuex';
     export default {
         name:'cart',
         data(){
             return{
 
             }
+        },
+        computed: {
+            ...mapState({
+                weiXinToolsReadyBool: 'weiXinToolsReadyBool'
+            })
+        },
+        mounted () {
+            this.$store.commit('weiXinToolsReadyBool', 1);
+            console.log(this.weiXinToolsReadyBool);
         }
     }
 </script>

@@ -8,9 +8,14 @@
 </template>
 
 <script>
-
+    import {mapState} from 'vuex';
 export default {
     name:'App',
+    computed: {
+        ...mapState({
+            weiXinToolsReadyBool: 'weiXinToolsReadyBool',
+        })
+    },
     data() {
         return {
             freeByRoutesArr: [
