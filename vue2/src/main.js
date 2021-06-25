@@ -5,6 +5,12 @@ import store from './store/';
 
 import Rem from './assets/js/rem';
 
+Vue.use(Rem);//标签栏
+
+// import Vconsole from 'vconsole'
+// const vConsole = new Vconsole()
+// export default vConsole
+
 Vue.config.productionTip = false;
 
 new Vue({
@@ -12,8 +18,6 @@ new Vue({
     store,
     render: h => h(App),
 }).$mount('#app');
-
-Vue.use(Rem);//标签栏
 
 const regExpAboutPage = /\/about\/(.*)\.html/;
 
