@@ -15,16 +15,58 @@
         },
         data () {
             return {
-
+                info1:0,
+                info2:0,
+                info3:0,
             }
         },
         methods:{
             toCartFun(){
                 this.$router.push('/shop/cart.html');
+            },
+            fun1(){
+                return new Promise((resolve) => {
+                    /* 你的逻辑代码 */
+                    console.log(0);
+                    this.info1 = 1;
+                    resolve(this.info1)
+                });
+            },
+            fun2(){
+                return new Promise((resolve) => {
+                    /* 你的逻辑代码 */
+                    console.log(this.info1);
+                    if(this.info1 == 1){
+                        this.info2 = 2;
+                    }
+                    resolve(this.info2)
+                });
+            },
+            fun3(){
+                return new Promise((resolve) => {
+                    /* 你的逻辑代码 */
+                    console.log(this.info2);
+                    if(this.info2 == 2){
+                        this.info3 = 3;
+                    }
+                    resolve(this.info3)
+                });
+            },
+            runAll(){
+                Promise.all([
+                    this.fun1(),
+                    this.fun2(),
+                    this.fun3()
+                ]).then(res => {
+                    console.log(res);
+                    console.log("runAll");
+                })
             }
         },
         mounted () {
-            console.log(this.weiXinToolsReadyBool);
+            this.runAll();
+            // console.log(this.weiXinToolsReadyBool);
+
         }
     }
 </script>
