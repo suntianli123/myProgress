@@ -1,0 +1,25 @@
+{
+  "extends": ["plugin:vue/essential", "eslint:recommended"],
+  "root": true,
+  "parserOptions": {
+    "parser": "babel-eslint"
+  },
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "indent": [0, 4, { "SwitchCase": 1 }],  // 强制使用一致的缩进
+    "no-console": 0,                        // 禁用console, 0代表不禁用, 2代表禁用
+    "no-empty": 2,                          // 块语句中的内容不能为空
+    "no-eq-null": 2,                        // 禁止在没有类型检查操作符的情况下与 null 进行比较
+    "no-extra-parens": 2,                   // 禁止不必要的括号
+    "no-new": 0,                            // 禁止在使用new构造一个实例后不赋值， 0-不禁止，1-禁止
+    "no-fallthrough": 0,                    // 禁止switch穿透， 0-不禁止，1-禁止
+    "no-unreachable": 0,                    // 不能有无法执行的代码，0-可以有，2-不可以有
+    "no-unused-vars": 0,                    // 不能有声明后未被使用的变量或参数，0-可以有，2-不可以有
+    "one-var": 0,                           // 禁止连续声明，0-不禁止，1-禁止
+    "space-before-function-paren": 0,       // 函数定义时括号前面要不要有空格，0-可以有，1-不可以有
+    "handle-callback-err": 0,               // nodejs 处理错误
+    "no-control-regex": "off"               // 禁止在正则表达式中使用控制字符
+  }
+}

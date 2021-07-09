@@ -13,7 +13,7 @@
 </template>
 <script>
     export default {
-        name:'about',
+        name:'computed',
         data () {
             return {
                 strInfo:'abc'
