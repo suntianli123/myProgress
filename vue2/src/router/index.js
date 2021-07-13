@@ -9,7 +9,7 @@ const routes = userCenterRoutes.concat(shopRoutes, [{
     path: '/*',
     name: 'all',
     redirect: () => {
-        return '/userCenter/esTest.html';
+        return '/userCenter/about.html';
     }
 }]);
 

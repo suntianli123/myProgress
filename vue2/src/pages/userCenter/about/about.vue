@@ -90,10 +90,21 @@
                     console.log(res);
                     // console.log("runAll");
                 })
+            },
+            runAllSettled(){
+                Promise.allSettled([
+                    this.fun1(),
+                    this.fun2(),
+                    this.fun3()
+                ]).then(res => {
+                    console.log(res);
+                    // console.log("runAll");
+                })
             }
         },
         mounted () {
             this.runAll();
+            this.runAllSettled();
             // console.log(this.weiXinToolsReadyBool);
         }
     }
