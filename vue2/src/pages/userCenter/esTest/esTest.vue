@@ -35,14 +35,30 @@
                 class Person {
                     constructor(name,age){
                         this.name = name;
-                        this.age = age
+                        this.age = age;
                     }
                     toString() {
-                        console.log('name:' + this.name + ',age:' + this.age);
+                        console.log(`名叫${this.name},年龄为${this.age}`);
                     }
                 }
-                const p1 = new Person('tom',18)
+                const p1 = new Person('tom',18);
+                const p2 = new Person('Jerry',22);
                 p1.toString();
+                p2.toString();
+
+                // 继承
+                class Student extends Person{
+                    constructor(name,age,grade){
+                        super(name,name);
+                        this.grade = grade
+                    }
+                    // 重写从父类继承过来的方法
+                    toString() {
+                        console.log(`名叫${this.name},年龄为${this.age},读的年级${this.grade}`);
+                    }
+                }
+                const s1 = new Student('Tony','14','初一')
+                s1.toString();
             }
         },
         mounted () {
