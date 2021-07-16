@@ -59,12 +59,30 @@
                 }
                 const s1 = new Student('Tony','14','初一')
                 s1.toString();
+            },
+            // ...展开运算符
+            esPoint(){
+                let arr1 = [1,3,5,7,9];
+                let arr2 = [2,4,6,8];
+                let arr3 = [...arr1,...arr2];   // 连接数组
+                console.log(...arr3);
+                function sum(...number){
+                    return number.reduce((preeValue,currentValue)=>{
+                        return preeValue + currentValue
+                    })
+                }
+                console.log(sum(1,2,3,4))
+                let person = {name:'tom',age:18};
+                let person2 = {...person,name:'Jerry'};  // 加{}是克隆复制一个对象，这样复制改变一个另一个不改变
+                console.log(person);
+                console.log(person2)
             }
         },
         mounted () {
             this.esTest1();
             this.esTest2();
             this.esClass();
+            this.esPoint();
 
             // 返回给定数字中的最大值
             // const values = [99, 100, -1, 48, 16];

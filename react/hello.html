@@ -15,10 +15,17 @@
     <div id="text2"></div>
     <div id="text3"></div>
     <div id="text4"></div>
+    <div id="text5"></div>
+    <div id="text6"></div>
+    <div id="text7"></div>
+    <h2>例8：props</h2>
+    <div id="text8"></div>
+    <div id="text9"></div>
 </body>
 <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/prop-types@15.6/prop-types.js"></script>
 <script type="text/babel">
     const VDOM1 = <h1>例1：Hello, world!</h1>;
     ReactDOM.render(
@@ -60,9 +67,9 @@
     );
 
 
-    // 函数式组件
+    // 简单函数式组件
     function Demo(){
-        return <h2>简单函数式组件</h2>
+        return <h2>例4：简单函数式组件</h2>
     }
     ReactDOM.render(
         // Demo(),
@@ -70,5 +77,90 @@
         document.getElementById('text4')
     );
 
+
+    // 创建类式组件
+    class MyCont extends React.Component {
+        render() {
+            return <h2>例5：类定义组件</h2>
+        }
+    }
+    ReactDOM.render(
+        <MyCont/>,
+        document.getElementById('text5')
+    );
+
+    // state 组件三大实例特征
+    class MyState extends React.Component {
+        constructor(props){
+            super(props)
+            this.state = {isWord:true,wind:'小雨'};
+            this.changeClick = this.changeState.bind(this)
+        }
+        // 改变isWord
+        changeState(){
+            console.log(this.state.isWord);
+            this.setState({isWord:!this.state.isWord,wind:'大雨'});
+
+        }
+        render() {
+            console.log(this);
+            const {isWord,wind} = this.state;
+            // return <h2>例6：组件的State{this.state.isWord?'真的':'假的'}</h2>
+            return <h2 onClick={this.changeClick}>例6：组件的State{isWord?'真的':'假的'},{wind}</h2>
+        }
+    }
+    ReactDOM.render(
+        <MyState/>,
+        document.getElementById('text6')
+    );
+
+    // state简写
+    class MyShorState extends React.Component {
+        state = {isWord:true,wind:'小雨'};
+        render() {
+            const {isWord,wind} = this.state;
+            return <h2 onClick={this.changeState}>例7：简写State{isWord?'是的':'不是的'},{wind}</h2>
+        }
+        // 改变isWord
+        changeState=()=>{
+            this.setState({isWord:!this.state.isWord,wind:'大雨'});
+
+        }
+    }
+    ReactDOM.render(
+        <MyShorState/>,
+        document.getElementById('text7')
+    );
+
+
+    // props
+    class Myprops extends React.Component {
+        render() {
+            const {name,sex,age} = this.props;
+            return (
+                <ul>
+                    <li>姓名：{name}</li>
+                    <li>性别：{sex}</li>
+                    <li>年龄：{age+1}</li>
+                </ul>
+            )
+        }
+        static propTypes = {
+            name:PropTypes.string.isRequired,       // 限制必传
+            age:PropTypes.number
+        };
+        // 默认
+        static defaultProps = {
+            sex:'默认值',
+        };
+    }
+    const p = {name:'老刘',sex:'男',age:18};
+    ReactDOM.render(
+        <Myprops name='Jerry' age={18}/>, document.getElementById('text8')
+    );
+    // 简易
+    ReactDOM.render(
+        <Myprops {...p}/>, document.getElementById('text9')
+    );
 </script>
 </html>
