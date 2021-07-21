@@ -21,6 +21,8 @@
     <h2>例8：props</h2>
     <div id="text8"></div>
     <div id="text9"></div>
+    <div id="text10"></div>
+    <div id="text11"></div>
 </body>
 <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
@@ -161,6 +163,62 @@
     // 简易
     ReactDOM.render(
         <Myprops {...p}/>, document.getElementById('text9')
+    );
+
+
+    // ref
+    class MyRef  extends React.Component{
+        render(){
+            return (
+                <div>
+                    <h2>例10：字符串形式的ref</h2>
+                    <input ref="input1" type="text" placeholder="点击按钮提示内容"/>
+                    <button ref="button1" style={{margin:'0 3px'}} onClick={this.showToast1}>点击提示</button>
+                    <input ref="input2" type="text" placeholder="失去焦点提示内容" onBlur={this.showToast2}/>
+                </div>
+
+            )
+        }
+        showToast1 = ()=>{
+            // console.log(this.refs.input1.value);
+            const {input1} = this.refs;
+            alert(input1.value);
+        }
+        showToast2 = ()=>{
+            const {input2} = this.refs;
+            alert(input2.value);
+        }
+    }
+    ReactDOM.render(
+        <MyRef/>,
+        document.getElementById('text10')
+    );
+
+
+    // 回调形式的ref
+    class MyRefFun  extends React.Component{
+        render(){
+            return (
+                <div>
+                    <h2>例11：回调形式的ref</h2>
+                    <input ref={c=>this.input1 = c} type="text" placeholder="点击按钮提示内容"/>
+                    <button style={{margin:'0 3px'}} onClick={this.showToast1}>点击提示</button>
+                    <input ref={c=>this.input2 = c} type="text" placeholder="失去焦点提示内容" onBlur={this.showToast2}/>
+                </div>
+            )
+        }
+        showToast1 = ()=>{
+            const {input1} = this;
+            alert(input1.value)
+        }
+        showToast2 = ()=>{
+            const {input2} = this;
+            alert(input2.value)
+        }
+    }
+    ReactDOM.render(
+        <MyRefFun/>,
+        document.getElementById('text11')
     );
 </script>
 </html>
