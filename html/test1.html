@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div>
+        qwerty
+    </div>
+</body>
+<script>
+    // 闭包
+    // for(var i = 0; i < 5; i++){
+    //     setTimeout(function(){
+    //         console.log(i++)
+    //     },4000)
+    // }
+    // console.log(i)
+
+    // 递归
+    function f(x){
+        if(x > 0){
+            console.log(x + f(x-1),'凄凄切切');
+            return x + f(x-1)
+
+        }else{
+            return 0
+        }
+    }
+    console.log(f(3))
+</script>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
+
+</html>
