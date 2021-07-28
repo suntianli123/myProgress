@@ -29,7 +29,8 @@
                 strInfo:'aaabbb123',
                 name:'张三',
                 sex:'男',
-                age:'20'
+                age:'20',
+                goodId:this.$route.query.goodId,
             }
         },
         computed: {
@@ -105,6 +106,7 @@
         mounted () {
             this.runAll();
             this.runAllSettled();
+            console.log(this.goodId);
             // console.log(this.weiXinToolsReadyBool);
         }
     }
