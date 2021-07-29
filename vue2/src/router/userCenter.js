@@ -2,6 +2,7 @@ import about from '@/pages/userCenter/about/about';
 import computed from '@/pages/userCenter/computed/computed';
 import esTest from '@/pages/userCenter/esTest/esTest';
 import emit from '@/pages/userCenter/emit/emit';
+import promise from '@/pages/userCenter/promise/promise';
 
 const userCenterRoutes = [
     {
@@ -29,6 +30,11 @@ const userCenterRoutes = [
         path:'/userCenter/emit.html',
         name:'emit',
         component:emit
+    },
+    {
+        path:'/userCenter/promise.html',
+        name:'promise',
+        component:promise
     }
 ];
 

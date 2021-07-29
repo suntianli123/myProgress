@@ -54,6 +54,8 @@
             toCartFun(){
                 this.$router.push('/shop/cart.html');
             },
+            //所谓Promise，简单说就是一个容器，里面保存着某个未来才会结束的事件（通常是一个异步操作）的结果。
+            //ES6 规定，Promise对象是一个构造函数，用来生成Promise实例
             fun1(){
                 return new Promise((resolve) => {
                     /* 你的逻辑代码 */
@@ -99,6 +101,7 @@
                     this.fun3()
                 ]).then(res => {
                     console.log(res);
+                    console.log(res[0].value);
                     // console.log("runAll");
                 })
             }

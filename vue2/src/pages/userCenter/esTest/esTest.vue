@@ -76,13 +76,16 @@
                 let person2 = {...person,name:'Jerry'};  // 加{}是克隆复制一个对象，这样复制改变一个另一个不改变
                 console.log(person);
                 console.log(person2)
-            }
+            },
+            // Promise
+
+
         },
         mounted () {
-            this.esTest1();
-            this.esTest2();
-            this.esClass();
-            this.esPoint();
+            // this.esTest1();
+            // this.esTest2();
+            // this.esClass();
+            // this.esPoint();
 
             // 返回给定数字中的最大值
             // const values = [99, 100, -1, 48, 16];
