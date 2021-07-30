@@ -4,8 +4,10 @@ import router from './router';
 import store from './store/';
 
 import Rem from './assets/js/rem';
+import {Toast} from 'vant';
 
 Vue.use(Rem);//标签栏
+Vue.use(Toast);//Toast 轻提示
 
 // import Vconsole from 'vconsole'
 // const vConsole = new Vconsole()
