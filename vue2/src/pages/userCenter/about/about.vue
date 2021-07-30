@@ -11,6 +11,7 @@
             <button @click="fuColorFun">修改子组件字体颜色按钮</button>
             <Child style="color:blue" :name="name" :sex="sex" :age="age" ref="addChild"></Child>
         </div>
+        <div class="pest_Div" ref="pest_Div">获取dom元素</div>
     </div>
 </template>
 <script>
@@ -43,6 +44,9 @@
             }
         },
         methods:{
+            getDomFun(){
+                console.log(this.$refs.pest_Div.innerText)
+            },
             fuAddFun(){
                 console.log(this.$refs.addChild);
                 this.$refs.addChild.addNum();
@@ -107,9 +111,9 @@
             }
         },
         mounted () {
-            this.runAll();
-            this.runAllSettled();
-            console.log(this.goodId);
+            // this.runAll();
+            // this.runAllSettled();
+            this.getDomFun();
             // console.log(this.weiXinToolsReadyBool);
         }
     }

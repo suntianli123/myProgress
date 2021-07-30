@@ -109,13 +109,41 @@
                             console.log(reason);
                         }
                     );
+            },
+            esTest6(){
+                // async,  asyns相当于new Promise
+                async function aFun(){
+                    let name = await '111111';
+                    let name2 = await name + '3334444';
+                    console.log(name2)
+                }
+                aFun()
+            },
+            esTest7(){
+                // async,  await 相当于then()
+                async function aFun(){
+                    let nest = await new Promise(resolve => {
+                        setTimeout(() => {
+                            resolve('111111')
+                        },1000)
+                    });
+                    let fired = await new Promise(resolve => {
+                        setTimeout(() => {
+                            resolve(nest + '222222')
+                        },1000)
+                    })
+                    console.log(fired);
+                }
+                aFun();
             }
 
         },
         mounted () {
             // this.esTest3();
-            this.esTest4();
+            // this.esTest4();
             // this.esTest5();
+            this.esTest6();
+            // this.esTest7()
         }
     }
 </script>

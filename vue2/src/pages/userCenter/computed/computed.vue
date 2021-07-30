@@ -9,6 +9,8 @@
         <div class="p1">{{reseverFun()}}</div>
         <div class="p1">{{reseverFun()}}</div>
         <div class="p1">{{reseverFun()}}</div>
+        <div class="p2">{{strInfo}}</div>
+        <button @click="changeFun">按钮</button>
     </div>
 </template>
 <script>
@@ -23,17 +25,32 @@
             // 计算属性（缓存）
             reseverStr(){
                 console.log(Date.now(),'计算属性的computed');
-                return this.strInfo.split('').reverse().join('') + '--计算属性的computed：' + Date.now()
+                return this.strInfo + '--计算属性的computed：' + Date.now()
             }
         },
         methods:{
             reseverFun(){
                 console.log(Date.now(),'普通的methods');
                 return this.strInfo.split('').reverse().join('') + '--普通的methods：' + Date.now()
+            },
+            changeFun(){
+                this.strInfo = 'rtyui'
+            },
+            setTimeChange(){
+                let that = this;
+                setTimeout(function () {
+                    that.strInfo = 'tttttt';
+                    console.log(that.strInfo);
+                },2000)
             }
         },
         mounted () {
+            this.setTimeChange();
+        },
+        watch:{
+            strInfo:function(){
 
+            }
         }
     }
 </script>
