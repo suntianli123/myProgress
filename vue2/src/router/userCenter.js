@@ -5,6 +5,7 @@ import emit from '@/pages/userCenter/emit/emit';
 import promise from '@/pages/userCenter/promise/promise';
 import diffComponent from '@/pages/userCenter/diffComponent/diffComponent';
 import diffJian from '@/pages/userCenter/diffComponent/diffJian';
+import smzq from '@/pages/userCenter/smzq/smzq';
 
 const userCenterRoutes = [
     {
@@ -47,6 +48,11 @@ const userCenterRoutes = [
         path:'/userCenter/diffJian.html',
         name:'diffJian',
         component:diffJian
+    },
+    {
+        path:'/userCenter/smzq.html',
+        name:'smzq',
+        component:smzq
     }
 ];
 
