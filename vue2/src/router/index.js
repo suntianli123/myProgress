@@ -29,7 +29,17 @@ const router = new Router({
     }
 });
 
-router.afterEach((to) => {
+router.beforeEach(async(to,from,next)=>{
+    let login_in = await true;
+    console.log(to);
+    if(login_in){
+        next()
+    }else{
+        console.log('router的beforeEach方法')
+    }
+});
+
+router.afterEach((to,from) => {
     // 设置页面title
     if (to.meta.title) {
         document.title = to.meta.title;
