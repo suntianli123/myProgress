@@ -27,7 +27,7 @@
             console.log('created');
             console.log('created',this.msg);
         },
-        // created和mounted的区别，reated无法操作DOM,mounted结束是才可以
+        // created和mounted的区别，created无法操作DOM,mounted结束是才可以
         beforeMount(){
             console.log('beforeMount')
         },

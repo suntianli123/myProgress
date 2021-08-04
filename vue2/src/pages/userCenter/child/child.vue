@@ -14,7 +14,8 @@
             }
         },
         created(){
-            console.log(this.$attrs);
+            // $attrs：输出除了name之外所有传递过来的数据
+            console.log('child---',this.$attrs);
         },
         methods:{
             addNum(){
