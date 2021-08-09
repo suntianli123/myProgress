@@ -61,7 +61,7 @@
             //所谓Promise，简单说就是一个容器，里面保存着某个未来才会结束的事件（通常是一个异步操作）的结果。
             //ES6 规定，Promise对象是一个构造函数，用来生成Promise实例
             fun1(){
-                return new Promise((resolve) => {
+                return new Promise((resolve,reject) => {
                     /* 你的逻辑代码 */
                     // console.log(0);
                     this.info1 = 1;
@@ -69,7 +69,7 @@
                 });
             },
             fun2(){
-                return new Promise((resolve) => {
+                return new Promise((resolve,reject) => {
                     /* 你的逻辑代码 */
                     // console.log(this.info1);
                     if(this.info1 == 1){
@@ -79,7 +79,7 @@
                 });
             },
             fun3(){
-                return new Promise((resolve) => {
+                return new Promise((resolve,reject) => {
                     /* 你的逻辑代码 */
                     // console.log(this.info2);
                     if(this.info2 == 2){
@@ -108,13 +108,72 @@
                     console.log(res[0].value);
                     // console.log("runAll");
                 })
+            },
+            errPromiseFun(){
+                // Promise.all即便有函数报错也不会中断其他函数的方法
+                function aFun(){
+                    return new Promise((resolve,reject) => {
+                        /* 你的逻辑代码 */
+                        // console.log(0);
+                        var str1 = '第1个个'
+                        resolve(str1)
+                    });
+                }
+                function bFun(){
+                    return new Promise((resolve,reject) => {
+                        /* 你的逻辑代码 */
+                        // console.log(0);
+                        var str1 = '第2个个';
+                        reject(str1)
+                    });
+                }
+                function cFun(){
+                    console.log(1111)
+                    return new Promise((resolve,reject) => {
+                        console.log(2222)
+                        /* 你的逻辑代码 */
+                        // console.log(0);
+                        var str1 = '第3个个'
+                        resolve(str1)
+                    });
+                }
+                Promise.all([
+                    aFun(),
+                    bFun(),
+                    cFun()
+                ]).then(res => {
+                    console.log(res);
+                }).catch(error=>{
+                    console.log('失败',error)
+                })
+            },
+            newProess(){
+                const p1 = new Promise((resolve, reject) => {
+                    resolve('12345')
+                }).then(result => result).catch(e => e);
+
+                const p2 = new Promise((resolve, reject) => {
+                    reject('hello');
+                    throw new Error('报错了');
+                }).then(result => result).catch(e => e);
+
+                const p3 = new Promise((resolve, reject) => {
+                    resolve('hello');
+                }).then(result => result).catch(e => e);
+
+                Promise.all([p1, p2, p3])
+                    .then(result => console.log(result))
+                    .catch(e => console.log(e));
             }
         },
+
         mounted () {
             // this.runAll();
             // this.runAllSettled();
-            this.getDomFun();
+            // this.getDomFun();
             // console.log(this.weiXinToolsReadyBool);
+            this.errPromiseFun();
+            // this.newProess();
         }
     }
 </script>

@@ -35,11 +35,18 @@
                         goodId:'2121'
                     }
                 });
+            },
+            showNum(){
+                console.log(11111);
             }
         },
         mounted () {
             this.$store.commit('weiXinToolsReadyBool', 1);
             console.log(this.weiXinToolsReadyBool);
+        },
+        activated(){
+            // activated 和 deactivated 将会在 <keep-alive> 树内的所有嵌套组件中触发
+            this.showNum();
         }
     }
 </script>
