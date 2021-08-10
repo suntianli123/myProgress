@@ -1,6 +1,9 @@
 <template>
     <div>
         eseses
+        <div class="content">
+
+        </div>
     </div>
 </template>
 
@@ -92,10 +95,23 @@
             // console.log( Math.max(...values) );
 
 
+            // var str1 ={a:1}
+            // var str2 ={b:2}
+            // var str3 ={c:3}
+            // var str4 ={d:4}
+            // var str5 ={f:5}
+            // var str = Object.assign(str1, str2,str3,str4,str5)
+            // console.log(str)
+
         }
     }
 </script>
 
-<style scoped>
-
+<style scoped lang="stylus">
+    .content {
+        width:300px;
+        height:300px;
+        zoom:1.1;
+        background bisque
+    }
 </style>

@@ -1,6 +1,7 @@
 const compileUtil = {
     getVal(expr,vm){
         return expr.split('.').reduce((data,currentVal)=>{
+            console.log(data[currentVal])
             return data[currentVal];
         },vm.$data)
     },
@@ -146,7 +147,20 @@ class MVue{
             new Observer(this.$data);
             // 有值，1、实现数据的观察者
             // 2、实现一个指令解析器
-            new Compile(this.$el,this)
+            new Compile(this.$el,this);
+            this.proxyData(this.$data);
+        }
+    }
+    proxyData(data){
+        for(const key in data){
+            Object.defineProperty(this,key,{
+                get(){
+                    return data[key]
+                },
+                set(newVal){
+                    data[key] = newVal
+                }
+            })
         }
     }
 }
