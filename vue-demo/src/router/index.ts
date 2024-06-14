@@ -43,6 +43,11 @@ const router = createRouter({
       path: '/watch1',
       name: 'watch1',
       component: () => import('../views/watch1.vue')
+    },
+    {
+      path: '/shengmzq',
+      name: 'shengmzq',
+      component: () => import('../views/shengmzq.vue')
     }
   ]
 })
