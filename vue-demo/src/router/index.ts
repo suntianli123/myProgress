@@ -12,34 +12,37 @@ const router = createRouter({
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
     },
     {
       path: '/demo1',
       name: 'demo1',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/demo1.vue')
     },
     {
       path: '/ref1',
       name: 'ref1',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/ref1.vue')
     },
     {
       path: '/reactive1',
       name: 'reactive1',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/reactive1.vue')
+    },
+    {
+      path: '/toref1',
+      name: 'toref1',
+      component: () => import('../views/toref1.vue')
+    },
+    {
+      path: '/computed1',
+      name: 'computed1',
+      component: () => import('../views/computed1.vue')
+    },
+    {
+      path: '/watch1',
+      name: 'watch1',
+      component: () => import('../views/watch1.vue')
     }
   ]
 })
