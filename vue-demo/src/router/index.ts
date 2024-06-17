@@ -35,9 +35,9 @@ const router = createRouter({
       component: () => import('../views/toref1.vue')
     },
     {
-      path: '/computed1',
-      name: 'computed1',
-      component: () => import('../views/computed1.vue')
+      path: '/compuTed1',
+      name: 'compuTed1',
+      component: () => import('../views/computedView.vue')
     },
     {
       path: '/watch1',
@@ -48,6 +48,48 @@ const router = createRouter({
       path: '/shengmzq',
       name: 'shengmzq',
       component: () => import('../views/shengmzq.vue')
+    },
+    {
+      // 组件传值
+      path: '/scoped1',
+      name: 'scoped1',
+      component: () => import('../views/scoped1.vue')
+    },
+    {
+      // 点击事件的 $event
+      path: '/fuCard',
+      name: 'fuCard',
+      component: () => import('../views/fuCard.vue')
+    },
+    {
+      // 动态路由切换
+      path: '/tabView',
+      name: 'tabView',
+      component: () => import('../views/tabView.vue')
+    },
+    {
+      // 插槽
+      path: '/slotView',
+      name: 'slotView',
+      component: () => import('../views/slotView.vue')
+    },
+    {
+      // 异步组件
+      path: '/defAsync',
+      name: 'defAsync',
+      component: () => import('../views/defAsync.vue')
+    },
+    {
+      // teleport 传送组件
+      path: '/tempView',
+      name: 'tempView',
+      component: () => import('../views/tempView.vue')
+    },
+    {
+      // keep-alive 缓存组件
+      path: '/keepView',
+      name: 'keepView',
+      component: () => import('../views/keepView.vue')
     }
   ]
 })
