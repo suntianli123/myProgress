@@ -49,6 +49,7 @@
         name: '小明',
         age: '18'
     })
+
     formDemo.age = '22'
     const submit = () => {
         console.log(formDemo)

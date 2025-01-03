@@ -90,6 +90,36 @@ const router = createRouter({
       path: '/keepView',
       name: 'keepView',
       component: () => import('../views/keepView.vue')
+    },
+    {
+      // transtion 动画组件
+      path: '/transtionView',
+      name: 'transtionView',
+      component: () => import('../views/transtionView.vue')
+    },
+    {
+      // 依赖注入  provide和inject
+      path: '/provideView',
+      name: 'provideView',
+      component: () => import('../views/provideView.vue')
+    },
+    {
+      // 兄弟组件传值  provide和inject,和mitt兄弟组件传值
+      path: '/brotherView',
+      name: 'brotherView',
+      component: () => import('../views/brotherView.vue')
+    },
+    {
+      // tex写法
+      path: '/tsxView',
+      name: 'tsxView',
+      component: () => import('../views/tsxView.vue')
+    },
+    {
+      // 
+      path: '/inptest',
+      name: 'inptest',
+      component: () => import('../views/inptest.vue')
     }
   ]
 })
