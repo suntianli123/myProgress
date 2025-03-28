@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package etcd;
+
+/* 定义 etcd RPC 服务接口 */
+service EtcdService{
+  rpc put(SetRequest) returns (JsonResponse){}
+  rpc get(GetRequest) returns (JsonResponse){}
+  rpc delete(DelRequest) returns (JsonResponse){}
+  rpc lock(LockRequest) returns (JsonResponse){}
+  rpc release(ReleaseRequest) returns (JsonResponse){}
+  rpc getAll(GetAllRequest) returns (JsonResponse){}
+}
+
+message SetRequest{
+  string key = 1;
+  string value = 2;
+}
+
+message GetRequest{
+  string key = 1;
+}
+
+message DelRequest{
+  string key = 1;
+}
+
+message LockRequest{
+  string key = 1;
+  double seconds = 2;
+}
+
+message ReleaseRequest{
+  string key = 1;
+  string value = 2;
+}
+message GetAllRequest{
+  string key = 1;
+}
+
+message JsonResponse{
+  string result = 1; // ok or error
+  string data = 2; // json string
+  string msg = 3; // error msg
+}

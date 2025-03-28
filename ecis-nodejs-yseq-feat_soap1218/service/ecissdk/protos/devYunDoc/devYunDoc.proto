@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package devYunDoc;
+
+/* 定义云文档开发者RPC服务接口 */
+service DevYunDocService{
+  rpc createFilesUpload(CreateFilesUploadRequest) returns (JsonResponse){}
+  rpc createFile(CreateFileRequest) returns (JsonResponse){}
+  rpc downloadFile(DownloadFileRequest) returns (JsonResponse){}
+}
+
+message CreateFilesUploadRequest{
+  int64 userid = 1;
+  string name = 2;
+  int64 size = 3;
+  repeated string parent_path = 4;
+}
+
+message CreateFileRequest{
+  int64 userid = 1;
+  string name = 2;
+  string sha1 = 3;
+  int64 size = 4;
+  int64 groupid = 5;
+  int64 parentid = 6;
+  repeated string parent_path = 7;
+  string etag = 8;
+  bool must_create = 9;
+}
+
+message DownloadFileRequest{
+  int64 fileid = 1;
+  int64 userid = 2;
+  bool req_by_internal = 3;
+}
+
+message JsonResponse{
+  string stat = 1;
+  string result = 2; // ok or error
+  string data = 3; // JSON string
+  string msg = 4; // error msg
+}

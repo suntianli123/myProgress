@@ -1,0 +1,708 @@
+// import sdkInstance from '../../util/sdk'
+import { sdkInstance } from '../../grpc/sdk'
+import { resErrJson } from '../../util/msgCode'
+import config from '../../config'
+import {
+  companyUsers,
+  usersAddCompany,
+  usersDelCompany,
+  delCompanyUsers,
+  batchActiveDepts,
+  batchPutDeptsOrder,
+  batchDisableCompanyUsers,
+  companyUsersEnable,
+  putCompanyUsers
+} from '../../model/openApi/company'
+import { logger } from '../../server'
+import { getCompanyToken } from '../authToken/func'
+import { currentTime } from '../../util/momentTime'
+
+/**
+ * @name  用户同步
+ * @param {Array} userList 第三方全量用户列表
+ * @returns {object} object
+ */
+/* 用户同步 */
+export async function mastUserTotal(userList: any): Promise<any> {
+  if (!userList || !userList.length) {
+    logger.error({ msg: '三方数据为空' })
+    return
+  }
+  const newSqlEst = await sdkInstance.middleware.mysql.select(
+    config.dbName,
+    'SELECT * FROM middle_users WHERE is_delete !=1',
+    []
+  )
+  const newFinish =
+  newSqlEst.data && newSqlEst.data.rows && Array.isArray(newSqlEst.data.rows)
+    ? newSqlEst.data.rows
+    : []
+  logger.info({ SQLUserCount: `middle_users数据表,newFinish：${JSON.stringify(newFinish)}` })
+  /* 查询中间表所有用户 */
+  const SQLUserCount: any = await sdkInstance.middleware.mysql.select(
+    config.dbName,
+    'SELECT COUNT(0) FROM middle_users WHERE is_delete !=1',
+    []
+  )
+  const count: any = SQLUserCount?.data?.rows[0]['count(0)']
+  logger.info({ SQLUserCount: `用户数量,count：${count}` })
+  let SQLUserList: any[] = []
+  if (count < 8000) {
+    logger.info({ msg: '进入人数小于5000' })
+    /* 查询中间表所有用户 */
+    const SQLResult = await sdkInstance.middleware.mysql.select(
+      config.dbName,
+      'SELECT * FROM middle_users WHERE is_delete !=1',
+      []
+    )
+    SQLUserList =
+        SQLResult.data && SQLResult.data.rows && Array.isArray(SQLResult.data.rows)
+          ? SQLResult.data.rows
+          : []
+    logger.info({ msg: `中间表, SQLUserList: ${JSON.stringify(SQLUserList)}` })
+    logger.info({ msg: `中间表, SQLUserList: ${SQLUserList.length}` })
+  } else {
+    logger.info({ msg: '人数超过5000' })
+    let temp: any[] = []
+    const size = 5000
+    for (let page = 0; page < count / size; page++) {
+      const SQLResult = await sdkInstance.middleware.mysql.select(
+        config.dbName,
+        'SELECT * FROM middle_users WHERE is_delete !=1 LIMIT ?,?',
+        [page * size, size]
+      )
+      logger.info({ msg: `查询中间表所有用户循环,SQLResult.data: ${JSON.stringify(SQLResult?.data)}` })
+      logger.info({ msg: `查询中间表所有用户循环,SQLResult.data.rows: ${JSON.stringify(SQLResult?.data?.rows)}` })
+      temp =
+          SQLResult.data && SQLResult.data.rows && Array.isArray(SQLResult.data.rows)
+            ? SQLResult.data.rows
+            : []
+      SQLUserList.push(...temp)
+      temp = []
+    }
+  }
+  const disableList = [] // 中间表状态为：禁用
+  for (const SQLUser of SQLUserList) {
+    // eslint-disable-next-line eqeqeq
+    if (SQLUser.is_delete == '2') {
+      disableList.push(SQLUser) // 中间表状态为：禁用
+    }
+  }
+  logger.info({
+    msg: `查询中间表后状态为禁用的:${JSON.stringify(disableList)}`
+  })
+  if (disableList && disableList.length !== 0) {
+    /* 状态为禁用需要启用 */
+    const needActive = []
+    for (const SQLUser of disableList) {
+      /* 查询条件，返回boolean值 */
+      const isNeedChange = userList.some(
+        // eslint-disable-next-line
+        (user: any) => user.id === SQLUser.user_id && (user.status == '1')
+      )
+      if (isNeedChange) needActive.push(SQLUser)
+    }
+    for (const user of needActive) {
+      logger.info({ msg: `用户需要启用:${JSON.stringify(user)}` })
+      for (const thirdUser of userList) {
+        if (user.user_id === thirdUser.id) {
+          user.order = thirdUser.order
+        }
+      }
+      await handleActiveUpdate(user)
+    }
+  }
+  logger.info({
+    msg: `查询中间表数量:${SQLUserList.length}, SQLUserList: ${JSON.stringify(SQLUserList)}`
+  })
+  /* 第一次同步中间表为空 */
+  if (SQLUserList.length === 0) {
+    /* 新增用户方法 */
+    userList && userList.length !== 0 && (await handleAddUser(userList))
+  } else {
+    if (SQLUserList && SQLUserList.length !== 0) {
+      /* 对比差异 */
+      const diff = await handleCheckNeed(userList, SQLUserList)
+      /* 新增用户方法 */
+      diff.needInsert &&
+        diff.needInsert.length !== 0 &&
+        (await handleAddUser(diff.needInsert))
+      /* 删除用户方法 - 执行禁用 - */
+      diff.needDelete &&
+        diff.needDelete.length !== 0 &&
+        (await handleDelUser(diff.needDelete))
+      /* 修改用户方法 */
+      diff.needUpDate &&
+        diff.needUpDate.length !== 0 &&
+        (await handleUpdateUser(diff.needUpDate))
+    }
+  }
+  return { result: 200, msg: '同步用户完成' }
+}
+
+/* 对比差异 */
+export async function handleCheckNeed(
+  userList: any,
+  SQLUserList: any
+): Promise<any> {
+  const needInsert: any[] = []
+  const needDelete: any[] = []
+  let needUpDate: any[] = []
+  /* 遍历对比需要新增的用户 */
+  for (const user of userList) {
+    /* 使用三方用户account去SQL表的用户数据里查询，返回boolean值 */
+    const isNeedAdd = SQLUserList.some(
+      (sqlUser: any) => sqlUser.user_id === user.id
+    )
+    /* 没有查询到，push进新增的数组里 */
+    if (!isNeedAdd) {
+      logger.info({ msg: ` 没有查询到，push进新增的数组里,user: ${JSON.stringify(user)}, isNeedAdd: ${isNeedAdd}` })
+      needInsert.push(user)
+    } else if (user.status != '1'){
+      const sqlDeleteItem: any = SQLUserList.filter((sqlItem: any) => sqlItem.user_id === user.id)
+      needDelete.push(sqlDeleteItem[0])
+    }
+  }
+  /* 遍历对比需要删除的用户 */
+  // for (const sqlUser of SQLUserList) {
+  //   /* 使用三方用户account去SQL表的用户数据里查询，返回boolean值 */
+  //   const isNeedDel = userList.some((user: any) => user.id === sqlUser.user_id)
+  //   /* 没有查询到，push进删除的数组里 */
+  //   if (!isNeedDel) needDelete.push(sqlUser)
+  // }
+  /* 遍历对比出需要修改的用户 */
+  needUpDate = await handleCheckNeedDept(userList, SQLUserList)
+  return {
+    needDelete,
+    needInsert,
+    needUpDate
+  }
+}
+
+/* 对比需要修改的用户下部门是否有修改 */
+async function handleCheckNeedDept(userList: any, SQLUserList: any) {
+  /* 获取企业token */
+  const companyToken = await getCompanyToken()
+  /* 第一次同步，如果中间表里不存在数据直接 */
+  if (!SQLUserList || SQLUserList.length === 0) return []
+  /* 定义一个需要更新的用户数组 */
+  const updateUser = []
+  for (const user of userList) {
+    logger.info({ msg: `三方用户和部门信息:${JSON.stringify(user)}` })
+    for (let i = 0; i < user.dept.length; i++) {
+      /* 查询中间表所有用户 */
+      const SQLResult = await sdkInstance.middleware.mysql.select(
+        config.dbName,
+        'SELECT * FROM middle_dept WHERE is_delete=0 AND ori_dept_id=?',
+        [user.dept[i].departmentId]
+      )
+      const SQLUserDepts =
+        SQLResult.data &&
+        SQLResult.data.rows &&
+        Array.isArray(SQLResult.data.rows)
+          ? SQLResult.data.rows
+          : []
+      if (!SQLUserDepts || SQLUserDepts.length === 0) {
+        logger.warn({
+          msg: `中间表部门不存在！请新同步部门后重试。 ${JSON.stringify(
+            user.dept[i]
+          )}`
+        })
+        continue
+      }
+      user.dept[i].dept_id = SQLUserDepts[0].dept_id
+    }
+    for (const sqlUser of SQLUserList) {
+      /* 判断用户名称是否相同 */
+      if (user.id === sqlUser.user_id) {
+        /* 将sql用户的WPSid 赋值给三方用户信息下 */
+        user.company_uid = sqlUser.company_uid
+        /* 名字不一样的需要修改 */
+        const isNameNotSame = user.name !== sqlUser.nick_name
+        if (isNameNotSame) user.newName = user.name
+        /* 再查一边该用户在表中所有部门 */
+        /* 查询中间表所有用户 */
+        const SQLResult = await sdkInstance.middleware.mysql.select(
+          config.dbName,
+          'SELECT * FROM middle_user_dept WHERE is_delete=0 AND user_id=?',
+          [user.id]
+        )
+        const SQLUserDeptList =
+          SQLResult.data &&
+          SQLResult.data.rows &&
+          Array.isArray(SQLResult.data.rows)
+            ? SQLResult.data.rows
+            : []
+        let insertList = []
+        const deleteList = []
+        if (!SQLUserDeptList || SQLUserDeptList.length === 0) {
+          insertList = user.dept
+        } else {
+          /* 判断是否需要新添加部门 */
+          for (const userDept of user.dept) {
+            const isNeedAdd = SQLUserDeptList.some(
+              (sqlUserDept: any) =>
+                // eslint-disable-next-line eqeqeq
+                userDept.departmentId == sqlUserDept.ori_dept_id
+            )
+            /* 需要新添加的部门list */
+            if (!isNeedAdd) insertList.push(userDept)
+          }
+          /* 判断是否需要从部门中删除 */
+          for (const sqlUserDept of SQLUserDeptList) {
+            const isNeedDelete = user.dept.some(
+              (userDept: any) =>
+                // eslint-disable-next-line eqeqeq
+                userDept.departmentId == sqlUserDept.ori_dept_id
+            )
+            /* 需要从部门中删除list */
+            if (!isNeedDelete) deleteList.push(sqlUserDept)
+          }
+        }
+        user.insertUserDept =
+          insertList && insertList.length !== 0 ? insertList : []
+        user.deleteUserDept =
+          deleteList && deleteList.length !== 0 ? deleteList : []
+        /* 满足修改条件的 */
+        if (
+          isNameNotSame ||
+          user.insertUserDept.length !== 0 ||
+          user.deleteUserDept.length !== 0
+        ) {
+          updateUser.push(user)
+        }
+      }
+    }
+    /* 查询中间表用户的部门数据 */
+    const SQLDeptResult = await sdkInstance.middleware.mysql.select(
+      config.dbName,
+      'SELECT * FROM middle_user_dept WHERE is_delete=0 AND user_id=?',
+      [user.id]
+    )
+    const SQLUserDeptLists =
+      SQLDeptResult.data && SQLDeptResult.data.rows && Array.isArray(SQLDeptResult.data.rows)
+        ? SQLDeptResult.data.rows
+        : []
+    if (SQLUserDeptLists.length !== 0) {
+      user.company_uid = SQLUserDeptLists[0].company_uid
+      updateUser.push(user)
+    }
+  }
+  /*
+   * 此时返回需要更新修改的用户信息里包含需要部门新增成员和部门删除成员
+   * 返回需要更新的用户 */
+  /* 需要过滤下update列表 */
+  const updateList = updateUser.filter((value, index, self) => {
+    return self.indexOf(value) === index
+  })
+  return updateList
+}
+
+/* 创建企业成员 */
+async function handleAddUser(insertUserList: any): Promise<any> {
+  const time = await currentTime()
+  /** 获取企业token */
+  const companyToken = await getCompanyToken()
+  for (const user of insertUserList) {
+    /* 调用创建企业成员WPS接口 */
+    const userParams = {
+      login_name: user.loginName,
+      password: user.password,
+      name: user.name,
+      third_union_id: user.id,
+      role_id: 3
+    }
+    const createCompanyUsers = await companyUsers(companyToken, userParams)
+    logger.info({ msg: `创建成员:${user.id}, name:${user.name} ` })
+    if (createCompanyUsers.result !== 0) {
+      logger.warn({ msg: `创建成员失败,user: ${JSON.stringify(user)},createCompanyUsers: ${JSON.stringify(createCompanyUsers)}` })
+      continue
+    }
+    /* 存入中间表的是接口返回的数据 */
+    const insertMiddleUser = await sdkInstance.middleware.mysql.insert(
+      config.dbName,
+      'INSERT INTO middle_users (user_id, nick_name, company_uid, create_time, update_time, create_user, update_user, syncSequence, maxSyncSequence, is_delete) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        user.id,
+        user.name,
+        createCompanyUsers.company_uid,
+        time,
+        time,
+        'admin',
+        'admin',
+        user.syncSequence,
+        user.maxSyncSequence,
+        0
+      ]
+    )
+    logger.info({ msg: `创建成员-中间表:${user.id}` })
+    /* 返回结果判断 */
+    if (insertMiddleUser.result !== 'ok') {
+      logger.warn({ msg: `新增同步用户表失败,user: ${JSON.stringify(user)},insertMiddleUser: ${JSON.stringify(insertMiddleUser)}` })
+      continue
+    }
+    /* todo: 创建完用户后需要激活一下用户，注释激活接口 */
+    // await batchActiveDepts(companyToken, createCompanyUsers.company_uid)
+    /* 将企业成员同步到部门下 */
+    for (const userDept of user.dept) {
+      /* 获取表里部门数据 */
+      const curUserDeptSQLResult: any =
+        await sdkInstance.middleware.mysql.select(
+          config.dbName,
+          'SELECT * FROM middle_dept WHERE is_delete=0 and ori_dept_id=?',
+          [userDept.departmentId]
+        )
+      const curSQLDeptList =
+        curUserDeptSQLResult.data &&
+        curUserDeptSQLResult.data.rows &&
+        Array.isArray(curUserDeptSQLResult.data.rows)
+          ? curUserDeptSQLResult.data.rows
+          : []
+      if (curSQLDeptList.length === 0) {
+        logger.info({ msg: `用户关联部门中间表不存在${userDept.departmentId}` })
+        continue
+      }
+      const deptId = curSQLDeptList[0].dept_id
+      /* 将企业成员同步到部门下 */
+      const pushUserDept = await usersAddCompany(
+        companyToken,
+        deptId,
+        createCompanyUsers.company_uid
+      )
+      logger.info({ msg: `将企业成员同步到部门下:${user.company_uid}` })
+      /* 如果错误，抛出错误 */
+      // if (pushUserDept.result !== 0) logger.info({ msg: '同步部门失败。' })
+      if (pushUserDept.result !== 0) {
+        logger.warn({ msg: `将企业成员同步到部门下失败,user: ${JSON.stringify(user)}},dept: ${deptId},pushUserDept: ${JSON.stringify(pushUserDept)}` })
+        continue
+      }
+      /* 将信息同步到关联表中 */
+      const insertMiddleUserDept = await sdkInstance.middleware.mysql.insert(
+        config.dbName,
+        'INSERT INTO middle_user_dept (user_id, company_uid, ori_dept_id, dept_id, user_order, create_time, update_time, create_user, update_user, is_delete) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          user.id,
+          createCompanyUsers.company_uid,
+          userDept.departmentId,
+          deptId,
+          user.order,
+          time,
+          time,
+          'admin',
+          'admin',
+          0
+        ]
+      )
+      logger.info({ msg: `新增用户同步到关联表中:${user.id}` })
+      /* 返回结果判断 */
+      if (insertMiddleUserDept.result !== 'ok') {
+        logger.info({ msg: `新增同步用户部门关联表失败,user: ${JSON.stringify(user)},userDept: ${JSON.stringify(userDept)}` })
+      }
+      const order = 1000000000 - user.order
+      const orderUserInDept = await batchPutDeptsOrder(companyToken, {
+        depts: [
+          {
+            company_uid: createCompanyUsers.company_uid,
+            dept_id: deptId,
+            order
+          }
+        ]
+      })
+      logger.info({ msg: `创建企业成员-修改成员order排序，WPS接口:${createCompanyUsers.company_uid}` })
+      /* 如果错误，抛出错误 */
+      if (orderUserInDept.result !== 0) logger.warn({ msg: `创建用户修改企业成员order失败,createCompanyUsers: ${JSON.stringify(createCompanyUsers)},orderUserInDept: ${JSON.stringify(orderUserInDept)}` })
+    }
+    /* 用户是需要禁用的。 */
+    // eslint-disable-next-line
+    if (user.status != '1') {
+      user.company_uid = createCompanyUsers.company_uid
+      /* 禁用用户 */
+      await handleUserDisable(user) // 禁用
+    }
+  }
+}
+
+/* 删除用户方法 */
+async function handleDelUser(delUserList: any) {
+  /** 获取企业token */
+  const companyToken = await getCompanyToken()
+  const time = await currentTime()
+  for (const user of delUserList) {
+    // 禁用用户
+    const delUser = await batchDisableCompanyUsers(companyToken, user.company_uid)
+    // logger.info({ msg: `删除用户:${user.company_uid}` })
+    logger.info({ msg: `禁用用户:${user.company_uid}` })
+    /* 如果错误，抛出错误 */
+    if (delUser.result !== 0) {
+      logger.warn({ msg: `wps侧禁用用户失败,user: ${JSON.stringify(user)},delUser: ${JSON.stringify(delUser)}` })
+      continue
+    }
+    /* 更新用户表 */
+    const delMiddleUser = await sdkInstance.middleware.mysql.update(
+      config.dbName,
+      'UPDATE middle_users SET is_delete=2, update_time=?, syncSequence=?, maxSyncSequence=? WHERE is_delete=0 AND company_uid=?',
+      [time, user.syncSequence, user.maxSyncSequence, user.company_uid]
+    )
+    logger.info({ msg: `更新用户表-中间表:${user.company_uid}` })
+    /* 返回结果判断 */
+    if (delMiddleUser.result !== 'ok') {
+      logger.warn({ msg: `更新用户表失败,user: ${JSON.stringify(user)},delMiddleUser: ${JSON.stringify(delMiddleUser)}` })
+    }
+  }
+}
+
+/* 修改用户信息 */
+async function handleUpdateUser(updateUserList: any) {
+  /* 当前时间 */
+  const time = await currentTime()
+
+  /** 获取企业token */
+  const companyToken = await getCompanyToken()
+  /* 是否只对用户的名称做修改其他的信息是否需要判断 */
+  for (const user of updateUserList) {
+    /* 给用户表添加序列 */
+    const updataSyncMiddle = await sdkInstance.middleware.mysql.update(
+      config.dbName,
+      'UPDATE middle_users SET syncSequence=?, maxSyncSequence=? WHERE is_delete=0 AND user_id=?',
+      [user.syncSequence, user.maxSyncSequence, user.id]
+    )
+    logger.info({ msg: `给用户表添加序列,user: ${JSON.stringify(user)}` })
+    /* 返回结果判断 */
+    if (updataSyncMiddle.result !== 'ok') {
+      logger.warn({ msg: `给用户表添加序列失败,user: ${JSON.stringify(user)},updataSyncMiddle: ${JSON.stringify(updataSyncMiddle)}` })
+    }
+    /* 如果用户的名称有修改 */
+    if (user.newName && user.newName !== '') {
+      /* 批量将成员添加到部门 */
+      const putUserParams = {
+        name: user.newName
+      }
+      /* 修改企业成员信息 */
+      const putUsers = await putCompanyUsers(
+        companyToken,
+        user.company_uid,
+        putUserParams
+      )
+      logger.info({ msg: `修改成员WPS接口:${user.company_uid}` })
+      /* 如果错误，抛出错误 */
+      if (putUsers.result !== 0) {
+        logger.warn({ msg: `修改企业成员失败,user: ${JSON.stringify(user)},putUsers: ${JSON.stringify(putUsers)}` })
+        continue
+      }
+      /* 更新用户表 */
+      const delMiddleUser = await sdkInstance.middleware.mysql.update(
+        config.dbName,
+        'UPDATE middle_users SET nick_name=?, update_time=?, syncSequence=?, maxSyncSequence=? WHERE is_delete=0 AND user_id=?',
+        [user.newName, time, user.syncSequence, user.maxSyncSequence, user.id]
+      )
+      logger.info({ msg: `修改成员－中间表:${user.company_uid}` })
+      /* 返回结果判断 */
+      if (delMiddleUser.result !== 'ok') {
+        logger.warn({ msg: `更新用户表失败,user: ${JSON.stringify(user)},delMiddleUser: ${JSON.stringify(delMiddleUser)}` })
+      }
+    }
+
+    /* 判断用户信息里是否有需要新增的部门数据 */
+    if (user.insertUserDept && user.insertUserDept.length !== 0) {
+      /* 遍历用户信息里需要添加成员的部门，在部门下添加企业成员 */
+      for (const userDept of user.insertUserDept) {
+        /* WPS 添加企业成员 接口 */
+        if (userDept.dept_id !== '' && user.company_uid !== '') {
+          const insertUserDeptInfo = await usersAddCompany(
+            companyToken,
+            userDept.dept_id,
+            user.company_uid
+          )
+          logger.info({ msg: `添加企业成员:${user.company_uid}` })
+          /* 如果错误，抛出错误 */
+          if (insertUserDeptInfo.result !== 0) {
+            logger.warn({ msg: `在该部门下添加成员失败,user: ${JSON.stringify(user)},userDept: ${JSON.stringify(userDept)},insertUserDeptInfo: ${JSON.stringify(insertUserDeptInfo)}` })
+            continue
+          }
+          /* 新增用户、部门关联表 */
+          const insertMiddleUserDept =
+            await sdkInstance.middleware.mysql.insert(
+              config.dbName,
+              'INSERT INTO middle_user_dept (user_id, company_uid, ori_dept_id, dept_id, user_order, create_time, update_time, create_user, update_user, is_delete) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+              [
+                user.id,
+                user.company_uid,
+                userDept.departmentId,
+                userDept.dept_id,
+                user.order,
+                time,
+                time,
+                'admin',
+                'admin',
+                0
+              ]
+            )
+          logger.info({
+            msg: `新增用户、部门关联表－中间表:${user.company_uid}`
+          })
+          /* 返回结果判断 */
+          if (insertMiddleUserDept.result !== 'ok') {
+            logger.warn({ msg: `新增用户关联表失败,user: ${JSON.stringify(user)},userDept: ${JSON.stringify(userDept)},insertMiddleUserDept: ${JSON.stringify(insertMiddleUserDept)}` })
+          }
+        }
+      }
+    }
+
+    for (const userDept of user.dept) {
+      const order = 1000000000 - user.order
+      const orderUserInDept = await batchPutDeptsOrder(companyToken, {
+        depts: [
+          {
+            company_uid: user.company_uid,
+            dept_id: userDept.dept_id,
+            order
+          }
+        ]
+      })
+      logger.info({ msg: `修改用户-修改成员order排序，WPS接口:${user.company_uid}` })
+      /* 如果错误，抛出错误 */
+      // if (orderUserInDept.result !== 0) logger.info({ msg: '修改企业成员order失败。' })
+      if (orderUserInDept.result !== 0) {
+        logger.warn({ msg: `修改用户修改企业成员order失败,user: ${JSON.stringify(user)},userDept: ${JSON.stringify(userDept)},orderUserInDept: ${JSON.stringify(orderUserInDept)}` })
+        continue
+      }
+      const upMiddleUser = await sdkInstance.middleware.mysql.update(
+        config.dbName,
+        'UPDATE middle_user_dept SET user_order=? WHERE is_delete=0 AND company_uid=?',
+        [user.order, user.company_uid]
+      )
+      logger.info({ msg: `更新用户表-中间表:${user.company_uid}` })
+      /* 返回结果判断 */
+      if (upMiddleUser.result !== 'ok') {
+        logger.info({ msg: `更新用户表失败,user: ${JSON.stringify(user)},delMiddleUser: ${JSON.stringify(upMiddleUser)}` })
+      }
+    }
+
+    /* 判断用户信息里是否有需要移出的部门数据 */
+    if (user.deleteUserDept && user.deleteUserDept.length !== 0) {
+      /* 遍历用户信息里需要移出成员的部门，在部门下移出企业成员 */
+      for (const userDept of user.deleteUserDept) {
+        /* WPS 移出企业成员 接口 */
+        const deleteUserDeptInfo = await usersDelCompany(
+          companyToken,
+          userDept.dept_id,
+          user.company_uid
+        )
+        logger.info({ msg: `删除成员:${user.company_uid}` })
+        /* 如果错误，抛出错误 */
+        if (deleteUserDeptInfo.result !== 0) {
+          logger.warn({ msg: `该部门下移出成员失败,user: ${JSON.stringify(user)},userDept: ${JSON.stringify(userDept)},deleteUserDeptInfo: ${JSON.stringify(deleteUserDeptInfo)}` })
+          continue
+        }
+        /* 更新用户、部门关联表 */
+        /* 删除部门中间表修改 isDelete状态 为 1 */
+        const delMiddleUserDept = await sdkInstance.middleware.mysql.delete(
+          config.dbName,
+          'DELETE FROM middle_user_dept WHERE is_delete=0 AND user_id=? AND dept_id=?',
+          [user.id, userDept.dept_id]
+        )
+        logger.info({ msg: `删除用户、部门关联表－中间表:${user.company_uid}` })
+        /* 返回结果判断 */
+        if (delMiddleUserDept.result !== 'ok') {
+          logger.warn({ msg: `删除用户、部门关联表失败,user: ${JSON.stringify(user)},userDept: ${JSON.stringify(userDept)},delMiddleUserDept: ${JSON.stringify(delMiddleUserDept)}` })
+        }
+      }
+    }
+    /* 用户是需要禁用的。 */
+    // eslint-disable-next-line
+    if (user.status != '1') {
+      /* 禁用用户 */
+      await handleUserDisable(user) // 禁用
+    }
+  }
+}
+
+/* 启用用户 */
+async function handleActiveUpdate(user: any) {
+  /** 获取企业token */
+  const companyToken = await getCompanyToken()
+  const time = await currentTime()
+  logger.info({ msg: `启用用户接口：${user.company_uid}` })
+  const enableUser = await companyUsersEnable(companyToken, user.company_uid)
+  logger.info({ msg: `启用用户接口返回状态:${user.company_uid}` })
+  if (enableUser.result !== 0) {
+    logger.warn({ msg: `启用用户接口失败,user: ${JSON.stringify(user)}` })
+    return
+  }
+  /* 更新用户表 */
+  logger.info({ msg: `启用更新用户表:${user.company_uid}` })
+  const enableMiddleUser = await sdkInstance.middleware.mysql.update(
+    config.dbName,
+    'UPDATE middle_users SET is_delete=0, update_time=?, syncSequence=?, maxSyncSequence=? WHERE company_uid=?',
+    [time, user.syncSequence, user.maxSyncSequence, user.company_uid]
+  )
+  logger.info({ msg: `启用用户表-中间表结果:${user.company_uid}` })
+  /* 返回结果判断 */
+  if (enableMiddleUser.result !== 'ok') {
+    logger.warn({ msg: `启用更新用户表失败,user: ${JSON.stringify(user)},enableMiddleUser: ${JSON.stringify(enableMiddleUser)}` })
+    return
+  }
+  /* 查询中间表用户的部门数据 */
+  const SQLDeptResult = await sdkInstance.middleware.mysql.select(
+    config.dbName,
+    'SELECT * FROM middle_user_dept WHERE user_id=?',
+    [user.user_id]
+  )
+  const SQLUserDeptLists =
+    SQLDeptResult.data && SQLDeptResult.data.rows && Array.isArray(SQLDeptResult.data.rows)
+      ? SQLDeptResult.data.rows
+      : []
+  if (SQLUserDeptLists.length !== 0) {
+    const order = 1000000000 - user.order
+    const orderUserInDept = await batchPutDeptsOrder(companyToken, {
+      depts: [
+        {
+          company_uid: user.company_uid,
+          dept_id: SQLUserDeptLists[0].dept_id,
+          order
+        }
+      ]
+    })
+    logger.info({ msg: `启用用户-修改成员order排序，WPS接口:${user.company_uid}` })
+    /* 如果错误，抛出错误 */
+    if (orderUserInDept.result !== 0) logger.warn({ msg: `启用用户修改企业成员order失败,user: ${JSON.stringify(user)}` })
+    const delMiddleUser = await sdkInstance.middleware.mysql.update(
+      config.dbName,
+      'UPDATE middle_user_dept SET user_order=? WHERE is_delete=0 AND company_uid=?',
+      [user.order, user.company_uid]
+    )
+    logger.info({ msg: `更新用户表-中间表:${user.company_uid}` })
+    /* 返回结果判断 */
+    if (delMiddleUser.result !== 'ok') {
+      logger.warn({ msg: `更新用户表失败,user: ${JSON.stringify(user)},delMiddleUser: ${JSON.stringify(delMiddleUser)}` })
+    }
+  }
+}
+/* 禁用用户 */
+async function handleUserDisable(user: any) {
+  /** 获取企业token */
+  const companyToken = await getCompanyToken()
+  const time = await currentTime()
+  /* 禁用WPS企业用户 */
+  const disableUserDept = await batchDisableCompanyUsers(
+    companyToken,
+    user.company_uid
+  )
+  logger.info({ msg: `禁用用户接口:${user.company_uid}` })
+  /* 如果错误，抛出错误 */
+  if (disableUserDept.result !== 0) {
+    logger.warn({ msg: `禁用用户接口失败,user: ${JSON.stringify(user)},disableUserDept: ${JSON.stringify(disableUserDept)}` })
+    return
+  }
+  /* 更新用户表 */
+  const delMiddleUser = await sdkInstance.middleware.mysql.update(
+    config.dbName,
+    'UPDATE middle_users SET is_delete=2, update_time=?, syncSequence=?, maxSyncSequence=? WHERE is_delete=0 AND company_uid=?',
+    [time, user.syncSequence, user.maxSyncSequence, user.company_uid]
+  )
+  logger.info({ msg: `禁用用户表-中间表:${user.company_uid}` })
+  /* 返回结果判断 */
+  if (delMiddleUser.result !== 'ok') {
+    logger.warn({ msg: `更新用户表失败,user: ${JSON.stringify(user)},disableUserDept: ${JSON.stringify(disableUserDept)}` })
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "esnext",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "noStrictGenericChecks": false,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "declaration": true,
+    "experimentalDecorators": true,
+    "outDir": "dist",
+    "allowJs": true
+  },
+  "include": [
+    "./src/**/*",
+    "./ecissdk/*",
+    "./src/index.ts" 
+  ]
+}

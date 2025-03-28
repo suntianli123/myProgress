@@ -1,0 +1,97 @@
+{
+  "appid": "AK20230314ZGXW",
+  "appkey": "65f51025e8a374984fba505308bcd68c",
+  "group": [
+    {
+      "itemType": "service",
+      "groupName": "account",
+      "itemName": ["getUserinfo", "isLogin"]
+    },
+    {
+      "itemType": "service",
+      "groupName": "globalRouter",
+      "itemName": ["bindRoute"]
+    },
+    {
+      "itemType": "service",
+      "groupName": "action",
+      "itemName": ["onDataInject"]
+    },
+    {
+      "itemType": "middleware",
+      "groupName": "cache",
+      "itemName": ["set", "get", "del", "hSet", "hGet", "hDel", "hGetAll"]
+    },
+    {
+      "itemType": "middleware",
+      "groupName": "config",
+      "itemName": ["get","put"]
+    },
+    {
+      "itemType": "middleware",
+      "groupName": "etcd",
+      "itemName": ["delete", "get", "put", "getAll", "lock", "release"]
+    },
+    {
+      "itemType": "middleware",
+      "groupName": "s3",
+      "itemName": ["download", "upload"]
+    },
+    {
+      "itemType": "middleware",
+      "groupName": "mysql",
+      "extraInfo": {
+        "dbNames": ["ecis_plugins_AK20230314ZGXW"]
+      },
+      "itemName": ["select", "update", "insert", "delete","execDbFile"]
+    },
+    {
+      "itemType": "service",
+      "groupName": "yunDoc",
+      "itemName": [
+        "createFolder",
+        "getFilePermissions",
+        "deleteFilePermission",
+        "listFiles",
+        "createFilesUpload",
+        "createFile",
+        "downloadFile",
+        "batchDownloadFile",
+        "updateFile"
+      ]
+    },
+    {
+      "itemType": "service",
+      "groupName": "wpsplus",
+      "itemName": ["getDeptUsers", "getIdConfuse"]
+    },
+    {
+      "itemType": "service",
+      "groupName": "wpsopen",
+      "itemName": ["getIdConfuse"]
+    },
+    {
+      "itemType": "scene",
+      "groupName": "login",
+      "itemName": [
+        "genAuthCredentials",
+        "verifyAuthCredentials",
+        "setConfig",
+        "getConfig",
+        "getUserSessions",
+        "postSessionLogout",
+        "postUserLogout"
+      ]
+    },
+    {
+      "itemType": "scene",
+      "groupName": "fileDecrypt",
+      "itemName": [
+        "preUploadFile",
+        "existDecryptFile",
+        "decryptFile",
+        "clearHistoryFile"
+      ]
+    }
+  ]
+}

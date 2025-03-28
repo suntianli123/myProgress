@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package mysql;
+
+/* 定义 mysql grpc 服务接口 */
+service MysqlService{
+  rpc select(CommonRequest) returns (JsonResponse){}
+  rpc update(CommonRequest) returns (JsonResponse){}
+  rpc insert(CommonRequest) returns (JsonResponse){}
+  rpc delete(CommonRequest) returns (JsonResponse){}
+}
+
+message CommonRequest{
+  string dbName = 1;
+  string sql = 2;
+  string values = 3;
+}
+
+message JsonResponse{
+  string result = 1; // ok or error
+  string data = 2; // json string
+  string msg = 3; // error msg
+}

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package devAccount;
+
+/* 定义 account 开发者 RPC 服务接口 */
+service DevAccountService {
+  rpc getUserById(GetUserByIdRequest) returns (JsonResponse) {}
+}
+
+message GetUserByIdRequest {
+  string userid = 1;
+}
+
+message JsonResponse{
+  string result = 1; // ok or error
+  string data = 2; // json string
+  string msg = 3; // error msg
+}

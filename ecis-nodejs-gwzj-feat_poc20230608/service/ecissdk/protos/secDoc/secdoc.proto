@@ -1,0 +1,70 @@
+syntax = "proto3";
+package secDoc;
+
+service SecDocService {
+  rpc encrypt(EncryptParamReq) returns (StreamDataResponse) {}
+  rpc decrypt(DecryptParamReq) returns (StreamDataResponse) {}
+  rpc queryDocumentCode(QueryDocumentParamReq) returns (JsonDataResponse) {}
+  rpc updateDocRights(UpdateDocRightsParamReq) returns (JsonDataResponse) {}
+  rpc queryUserDepartments(QueryUserDepartmentsReq) returns (JsonDataResponse) {}
+  rpc getSecureDocumentUpdateUrl(GetSecureDocumentUpdateUrlReq) returns (JsonDataResponse) {}
+  rpc updateSecureDocument(UpdateSecureDocumentReq) returns (JsonDataResponse) {}
+}
+
+message EncryptParamReq {
+  string bodyStr = 1;
+}
+
+message DecryptParamReq {
+  int64 fileId = 1;
+  string fileName  = 2;
+  string fileUrl  = 3;
+}
+
+message QueryDocumentParamReq {
+  int64 fileId = 1;
+  string fileName  = 2;
+  int64 creatorId  = 3;
+}
+
+message UpdateDocRightsParamReq {
+  string bodyStr = 1;
+}
+
+message QueryUserDepartmentsReq {
+  string compId = 1;
+  string compUid  = 2;
+  int64 userId  = 3;
+}
+
+message GetSecureDocumentUpdateUrlReq {
+  int64 groupId = 1;
+  int64 size  = 2;
+}
+
+message UpdateSecureDocumentReq {
+  int64 groupId = 1;
+  int64 fileId  = 2;
+  int64 parentId  = 3;
+  int64 operatorId  = 4;
+  string originSha1  = 5;
+  string newSha1  = 6;
+  string storeType  = 7;
+  string storeId  = 8;
+  string secureGuid  = 9;
+  int64 source  = 10;
+  int64 size  = 11;
+}
+
+message StreamDataResponse{
+  string result = 1;
+  bytes data = 2;
+  string msg = 3;
+  string info = 4;
+}
+
+message JsonDataResponse{
+  string result = 1;
+  string data = 2;
+  string msg = 3;
+}

@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package pocket;
+
+/* 定义 fileScan RPC 服务接口 */
+service PocketService {
+  rpc getProfile(NullRequest) returns (CommonResponse){}
+  rpc updateProfile(UpdateProfileRequest) returns (CommonResponse){}
+  rpc getFileDownloadUrl(GetFileDownloadUrlRequest) returns (GetFileDownloadUrlResponse){}
+  rpc uploadFile(UploadFileRequest) returns (UploadFileResponse){}
+}
+
+message NullRequest {
+
+}
+
+message GetFileDownloadUrlRequest {
+    string file_token = 1;
+    string expect_file_name = 2;
+    bool internal = 3;
+    string x_origin = 4;
+}
+
+message GetFileDownloadUrlResponse {
+    int32 code = 1;
+    string message =2;
+    string data =3;
+}
+
+message UpdateProfileRequest {
+    string endpoint = 1;
+    string flat_enable = 2;
+    string history_merge_disable = 3;
+    int64 history_version_number_limit = 4;
+    string review_enable = 5;
+    int64 recycle_storage_days = 6;
+    int64 review_merge_interval = 7;
+    int64 batch_download_max_files = 8;
+    int64 batch_download_max_size = 9;
+    int64 batch_download_rate_limit = 10;
+    string allow_origins = 11;
+}
+
+message UploadFileResponse {
+    int32 code =1;
+    UploadFileToken data =2;
+    string message=3;
+}
+
+message UploadFileToken {
+    string file_token=1;
+}
+
+message UploadFileRequest {
+    bool auto_ack=1;
+    string content_type=2;
+    string file_token=3;
+    string hash=4;
+    bool internal=5;
+    string name=6;
+    int64 operator=7;
+    string parent_token=8;
+    int64 size=9;
+    int64 volume_id=10;
+    bytes data=11;
+}
+
+message CommonResponse{
+  int32 code = 1;
+  string data = 2;
+  string message = 3;
+}

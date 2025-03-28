@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package cache;
+
+/* 定义 cache RPC 服务接口 */
+service CacheService{
+  rpc set(SetRequest) returns (JsonResponse){}
+  rpc get(GetRequest) returns (JsonResponse){}
+  rpc del(DelRequest) returns (JsonResponse){}
+  rpc hSet(HSetRequest) returns (JsonResponse){}
+  rpc hGet(HGetRequest) returns (JsonResponse){}
+  rpc hDel(HDelRequest) returns (JsonResponse){}
+  rpc hGetAll(HGetAllRequest) returns (JsonResponse){}
+}
+
+message SetRequest{
+  string key = 1;
+  string value = 2;
+  string expire = 3;
+}
+
+message GetRequest{
+  string key = 1;
+}
+
+message DelRequest{
+  string key = 1;
+}
+
+message HSetRequest{
+  string hash = 1;
+  string field = 2;
+  string value = 3;
+}
+
+message HGetRequest{
+  string hash = 1;
+  string field = 2;
+}
+
+message HDelRequest{
+  string hash = 1;
+  string field = 2;
+}
+
+message HGetAllRequest{
+  string hash = 1;
+}
+
+message JsonResponse{
+  string result = 1; // ok or error
+  string data = 2; // json string
+  string msg = 3; // error msg
+}

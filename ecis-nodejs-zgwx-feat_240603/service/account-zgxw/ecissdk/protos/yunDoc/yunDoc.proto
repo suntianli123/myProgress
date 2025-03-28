@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package yunDoc;
+
+/* 定义云文档RPC服务接口 */
+service YunDocService{
+  rpc listFiles(ListFilesRequest) returns (JsonResponse){}
+  rpc createFolder(CreateFolderRequest) returns (JsonResponse){}
+  rpc getFilePermissions(GetFilePermissionsRequest) returns (JsonResponse){}
+  rpc deleteFilePermission(DeleteFilePermissionRequest) returns (JsonResponse){}
+  rpc createFilesUpload(CreateFilesUploadRequest) returns (JsonResponse){}
+  rpc createFile(CreateFileRequest) returns (JsonResponse){}
+  rpc updateFile(UpdateFileRequest) returns (JsonResponse){}
+  rpc downloadFile(DownloadFileRequest) returns (JsonResponse){}
+  rpc batchDownloadFile(BatchDownloadFileRequest) returns (JsonResponse){}
+}
+
+message ListFilesRequest{
+  int32 count = 1;
+  string filter = 2;
+  int64 groupid = 3;
+  repeated string ignore = 4;
+  repeated string include = 5;
+  string include_exts = 6;
+  bool linkgroup = 7;
+  int32 offset = 8;
+  string order = 9;
+  string orderby = 10;
+  int64 parentid = 11;
+  bool review_pic_thumbnail = 12;
+}
+
+message CreateFolderRequest{
+  int64 groupid = 1;
+  bool must_create = 2;
+  string name = 3;
+  repeated string parent_path = 4;
+  int64 parentid = 5;
+  bool retrieve_existent = 6;
+  string csrfmiddlewaretoken = 7;
+}
+
+message GetFilePermissionsRequest{
+  int64 groupId = 1;
+  int64 fileId = 2;
+  string next = 3;
+}
+
+message DeleteFilePermissionRequest{
+  int64 groupId = 1;
+  int64 fileId = 2;
+  int64 subject_id = 3;
+  string subject_type = 4;
+}
+
+message CreateFilesUploadRequest{
+  bool checkname = 1;
+  string client_stores = 2;
+  string contenttype = 3;
+  int64 groupid = 4;
+  string name = 5;
+  int64 parentid = 6;
+  bool req_by_internal = 7;
+  int64 size = 8;
+  string startswithfilename = 9;
+  string successactionstatus = 10;
+  int64 trytime = 11;
+  string sha1 = 12;
+  string csrfmiddlewaretoken = 13;
+}
+
+message CreateFileRequest{
+  string etag = 1;
+  int64 fileid = 2;
+  int64 groupid = 3;
+  string key = 4;
+  string mac = 5;
+  bool must_create = 6;
+  string name = 7;
+  repeated string parent_path = 8;
+  int64 parentid = 9;
+  string secure_guid = 10;
+  string sha1 = 11;
+  int64 size = 12;
+  string store = 13;
+  bool unlimited_size = 14;
+  string csrfmiddlewaretoken = 15;
+}
+
+message UpdateFileRequest{
+  string client_stores = 1;
+  int64 fileid = 2;
+  bool req_by_internal = 3;
+  string s3sha256 = 4;
+  string sha1 = 5;
+  int64 size = 6;
+  int64 trytime = 7;
+  string csrfmiddlewaretoken = 8;
+}
+
+message DownloadFileRequest{
+  int64 fileid = 1;
+  int64 groupid = 2;
+  bool isblocks = 3;
+  string processon_type = 4;
+  string store = 5;
+}
+
+message BatchDownloadFileRequest{
+  repeated int64 fileids = 1;
+  int64 groupid = 2;
+  string csrfmiddlewaretoken = 3;
+}
+
+message JsonResponse{
+  string stat = 1;
+  string result = 2; // ok or error
+  string data = 3; // JSON string
+  string msg = 4; // error msg
+}

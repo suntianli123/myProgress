@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package wpsopen;
+
+service WpsopenService {
+  rpc getIdConfuse(GetIdConfuseRequest) returns (JsonResponse){}
+  rpc getFileInfo(GetFileInfoRequest) returns (JsonResponse){}
+  rpc getPreviewInnerFileInfo(GetPreviewInnerFileInfoRequest) returns (JsonResponse){}
+  rpc getSaveFileUrl(GetSaveFileUrlRequest) returns (JsonResponse){}
+}
+
+message GetIdConfuseRequest {
+  string queryStr = 1;
+}
+
+message GetFileInfoRequest {
+  string queryStr = 1;
+}
+
+message GetPreviewInnerFileInfoRequest {
+  string queryStr = 1;
+}
+
+message GetSaveFileUrlRequest {
+  string queryStr = 1;
+}
+
+message JsonResponse{
+  string result = 1; // ok or error
+  string data = 2; // json string
+  string msg = 3; // error msg
+}

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package fileDecrypt;
+
+/* 定义全局路由服务接口 */
+service FileDecryptService{
+  rpc existDecryptFile(ExistDecryptFileRequest) returns (JsonResponse){}
+  rpc decryptFile(DecryptFileRequest) returns (JsonResponse){}
+  rpc clearHistoryFile(ClearHistoryFileRequest) returns (JsonResponse){}
+  rpc preUploadFile(PreUploadFileRequest) returns (JsonResponse){}
+}
+
+message ExistDecryptFileRequest{
+  string store_key = 1;
+  string file_type = 2;
+  int64 file_size = 3;
+}
+
+message DecryptFileRequest{
+  string store_key = 1;
+  string file_type = 2;
+  int64 file_size = 3;
+  CbMessage callback = 4;
+}
+
+message CbMessage{
+  int64 errCode = 1;
+  string msg = 2;
+}
+
+message ClearHistoryFileRequest{
+  string store_key = 1;
+  int64 last_date = 2;
+}
+
+message PreUploadFileRequest{
+  string store_key = 1;
+}
+
+message JsonResponse{
+  string result = 1; // ok or error
+  string data = 2; // json string
+  string msg = 3; // error msg
+}

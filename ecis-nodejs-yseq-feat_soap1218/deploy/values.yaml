@@ -1,0 +1,30 @@
+name: nodejs-demo
+kind: Deployment
+image: ""
+container:
+  command:
+livenessProbe:
+  tcpSocket:
+    port: 8000
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+readinessProbe:
+  tcpSocket:
+    port: 8000
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+service:
+  ports:
+    port: 80
+    protocol: TCP
+    targetPort: 8000
+
+env:
+  APPID: 'ST012022022501'
+  APPKEY: 'xxx'

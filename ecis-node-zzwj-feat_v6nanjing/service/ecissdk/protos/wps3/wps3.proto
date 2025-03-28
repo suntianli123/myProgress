@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package wps3;
+
+/* 定义 wps3 RPC 服务接口 */
+service Wps3Service{
+  rpc upload(UploadRequest) returns (JsonResponse){}
+  rpc download(DownloadRequest) returns (JsonResponse){}
+}
+
+message UploadRequest{
+  string key = 1;
+  string stream = 2;
+}
+
+message DownloadRequest{
+  string key = 1;
+}
+
+message JsonResponse{
+  string result = 1; // ok or error
+  string data = 2; // json string
+  string msg = 3; // error msg
+}

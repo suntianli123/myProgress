@@ -1,0 +1,7 @@
+{   
+    "id": "gwzjaccount",   
+    "name": "nodejs-demo",   
+    "version": "1.0.1",   
+    "type": "service",   
+    "source": "file://servie-gwzjaccount-1.0.1" 
+}

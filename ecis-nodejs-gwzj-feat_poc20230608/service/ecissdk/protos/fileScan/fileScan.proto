@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package fileScan;
+
+/* 定义 fileScan RPC 服务接口 */
+service FileScanService {
+  rpc getFileParentNames(GetFileParentNamesRequest) returns (JsonResponse){}
+  rpc getCorpGroupInfo(GetCorpGroupInfoRequest) returns (JsonResponse){}
+  rpc getFilesInfo(GetFilesInfoRequest) returns (JsonResponse){}
+  rpc getFilePathNames(GetFilePathNamesRequest) returns (JsonResponse){}
+  rpc downloadFile(DownloadFileRequest) returns (JsonResponse){}
+  rpc downloadFirstRecycleFile(DownloadFirstRecycleFileRequest) returns (JsonResponse){}
+  rpc downloadHistoryFile(DownloadHistoryFileRequest) returns (JsonResponse){}
+  rpc createTerm(CreateTermRequest) returns (JsonResponse){}
+  rpc updateTerm(UpdateTermRequest) returns (JsonResponse){}
+  rpc getTerm(GetTermRequest) returns (JsonResponse){}
+  rpc createObjectTermsRelation(CreateObjectTermsRelationRequest) returns (JsonResponse){}
+  rpc listObjectTermsRelation(ListObjectTermsRelationRequest) returns (JsonResponse){}
+  rpc getObjectTermRelation(GetObjectTermRelationRequest) returns (JsonResponse){}
+  rpc delObjectTermRelation(DelObjectTermRelationRequest) returns (JsonResponse){}
+  rpc createMetaType(CreateMetaTypeRequest) returns (JsonResponse){}
+  rpc createMetadata(CreateMetadataRequest) returns (JsonResponse){}
+  rpc delMetadata(DelMetadataRequest) returns (JsonResponse){}
+  rpc listFile(ListFileRequest) returns (JsonResponse){}
+}
+
+message GetFileParentNamesRequest {
+  string groupid = 1;
+  string fileid = 2;
+  string queryStr = 3;
+}
+
+message GetCorpGroupInfoRequest {
+  string groupid = 1;
+}
+
+message GetFilesInfoRequest {
+  string queryStr = 1;
+}
+
+message GetFilePathNamesRequest {
+  string groupid = 1;
+  string fileid = 2;
+}
+
+message DownloadFileRequest {
+  string fileid = 1;
+  string queryStr = 2;
+}
+
+message DownloadFirstRecycleFileRequest {
+  string fileid = 1;
+  string queryStr = 2;
+}
+
+message DownloadHistoryFileRequest {
+  string historyid = 1;
+  string queryStr = 2;
+}
+
+message CreateTermRequest {
+  string bodyStr = 1;
+}
+
+message UpdateTermRequest {
+  string queryStr = 1;
+  string bodyStr = 2;
+}
+
+message GetTermRequest {
+  string queryStr = 1;
+}
+
+message CreateObjectTermsRelationRequest {
+  string bodyStr = 1;
+}
+
+message ListObjectTermsRelationRequest {
+  string bodyStr = 1;
+}
+
+message GetObjectTermRelationRequest {
+  string queryStr = 1;
+}
+
+message DelObjectTermRelationRequest {
+  string bodyStr = 1;
+}
+
+message CreateMetaTypeRequest {
+  string queryStr = 1;
+  string bodyStr = 2;
+}
+
+message CreateMetadataRequest {
+  string bodyStr = 1;
+}
+
+message DelMetadataRequest {
+  string queryStr = 1;
+  string bodyStr = 2;
+}
+
+message ListFileRequest {
+  string bodyStr = 1;
+}
+
+message JsonResponse{
+  string result = 1; // ok or error
+  string data = 2; // json string
+  string msg = 3; // error msg
+}

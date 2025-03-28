@@ -39,9 +39,9 @@
   
 <script setup lang='ts'>
     import { ref, reactive, readonly, shallowReactive } from 'vue'
-    // ref 支持所有类型，  reactuve 支持引用类型 如 Array Object Map Set
-    // ref 取值 赋值 需要加.value。  reactuve是不需要加.value
-    // reactuve是 proxy代理， 不能直接赋值，否则会破坏响应式对象，可以通过 push + 解构方式(...xxx)
+    // ref 支持所有类型，  reactive 支持引用类型 如 Array Object Map Set  底层用的object.defineProperty
+    // ref 取值 赋值 需要加.value。  reactive是不需要加.value
+    // reactive是 proxy代理， 不能直接赋值，否则会破坏响应式对象，可以通过 push + 解构方式(...xxx)
     // 也可以添加一个对象，把数组作为一个属性
 
     // 可以绑定表单
