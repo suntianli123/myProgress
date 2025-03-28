@@ -1,9 +1,0 @@
-{
-  "appId": "ak20230612gwzj",
-  "id": "gwzjaccount",
-  "name": "账号对接",
-  "version": "1.0.1",   
-  "type": "service",
-  "source": "file://servie-gwzjaccount-1.0.1",
-  "internal": false
-}

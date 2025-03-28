@@ -1,9 +1,0 @@
-{
-  "appId": "ak20230129yseq",
-  "id": "AKYSEQOAUTH",
-  "name": "央视二期单点登录",
-  "version": "0.1.13",
-  "type": "service",
-  "source": "file://servie-AKYSEQOAUTH-0.1.13",
-  "internal": false
-}

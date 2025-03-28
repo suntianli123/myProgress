@@ -1,9 +1,0 @@
-{
-  "appId": "ak20230306zzwj",
-  "id": "zzwjaccount",
-  "name": "成都账号对接",
-  "version": "1.0.7",
-  "type": "service",
-  "source": "file://servie-arm-zzwjaccount-1.0.7",
-  "internal": false
-}
