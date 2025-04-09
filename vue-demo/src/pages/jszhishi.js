@@ -108,3 +108,29 @@ function deepClone(obj) {
 3) obj instanceof Array // 不严谨，会往原型里找 object里找
 4）Array.prototype.isPrototypeOf(obj)
 5) obj.constructor.toString().indexOf('Array') > -1
+
+10、webpack优化
+1）减少内容的处理数量,用exclude排出掉一些不必要的处理，在开发环境排除，不能对代码运行有影响，可以排出js
+config.module.rule('js').exclude.add(resolve('/node_modules')).add(resolve('/src'))
+2）dll优化，提前打包第三方库
+创建webpack.dll.js文件
+将第三方库打包，后续打包的时候不再去打包第三方库
+entry:{
+    // 需要提取的库文件
+    vendor:['vue','vuex','vue-router','echarts']
+}
+配置命令：
+// 当执行命令时提示是否安装webpack，不要安装，需要手动安装webpack-cli@3.3.12固定版本
+'dll': "webpack --config webpack.dll.js"
+3）
+多线程打包： 下载依赖 thrad-loader
+缓存，关闭 css-sourcemap，本身是打开的
+, 和js-sourcemap
+但是调试的时候console.log会打印打包后的代码，不容易定位
+3）去掉打包不需要的东西
+prolod、friendly的可以去掉
+config.plugins.delete('friendly')
+4)压缩文件
+js:terser-webpack-plugin
+css: optimize-css-assets-webpack-plugin、mini-css-extract-plugin
+gzip压缩： compression-webpack-plugin

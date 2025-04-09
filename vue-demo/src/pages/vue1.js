@@ -37,7 +37,9 @@ proxy是代理，是代理了取值和修改值得操作，是对象就new Proxy
 通过Map结构将属性和effect映射起来
 当属性修改时会找到对应的effect列表依次执行trigger
 
-7、vue.set方法如何实现的
+7、vue.set方法如何实现的  $set
+数据更新，但是视图没有更新
+this.$set(this.arr,'1','x112') // 改arr数组下标1 的值为x112
 不是对象类型，不能使用set方法
 数组的话用splice方法
 如果是本身属于这个对象，直接修改，target[key] = val
@@ -111,7 +113,12 @@ vue3移除了
 防抖、图片lazy加载
 
 20、nextTick理解
-视图更新时异步的，nextTick是把逻辑卸载更新后执行
+视图更新时异步的，nextTick是把逻辑卸载更新后执行。获取更新后的dom
+$nextTick(callback){
+    return Promise.resolve().then(() => {
+        callback()
+    })
+}
 
 21、keep-alive常用在哪里
 缓存组件，常用在路由中，动态组件中
@@ -183,15 +190,157 @@ v-show和 v-if选取
 
 29、vueX
 状态管理模式，采用集中管理模式来处理组件中的状态，共享数据
-state： 存储组件状态
-getters: 读取
-mutations: 修改state值,同步的  commit
-actions: 修改state值，异步的   dispatch
+state： 存储组件状态，全局共享属性
+getters: 读取，可以写修改state里值得方法,不可以修改的
+getters: {
+    jisuanStr(state) {
+        return state.str + '美元'
+    }
+}
+
+mutations: 修改state值,存放同步方法的,没有return值的  commit
+actions: 修改state值，存放异步方法的，并且是用来提交mutations，没有return值的   dispatch
+modules: 模块化
+
+使用state的属性：
+this.$store.state.str;  // 可以直接修改str这个值
+  或者  
+import {mapState} from 'vuex'
+computed： {
+    ...mapState(['str'])
+} // 直接写str，但不能直接修改str这个值
+
+使用getters的方法：
+{{ $store.getters.jisuanStr }}  或者
+import {mapGetters} from 'vuex'
+computed： {
+    ...mapGetters(['jisuanStr'])
+} // 直接写 {{ jisuanStr }}
+
+使用mutations的方法：
+import {mapMutations} from 'vuex'
+computed： {
+    ...mapMutations(['addFun'])
+} // 直接写 {{ jisuanStr }}
 
 
 30、刷新页面后vueX的数据丢失
-获取到数据后存储到本地
-检测不存在时重新拉取数据
+1)获取到数据后存储到本地，检测不存在时重新拉取数据
+2)使用插件： vuex-persistedstate
+plugins: [
+    createPersistedState({
+        storage: window.sessionStorage,
+        key: 'store',
+        render(state){
+            return {...state};
+        }
+    })
+]
 
 31、vue2和vue3的区别
-vue3把模块进行了拆分
+1）双向绑定方法不同
+2）$set在vue3中没有了，不需要了
+3）v-if和v-for优先级不同了
+4）vue2 是选项式API, vue3是可向下兼容，可以用选项式也可以用组合式api,Setup 形式
+setup有可能乱，可以用hooks函数式解决
+export default asdfun
+
+32、组件传值传值
+1、父传子： props
+这种方式子不能直接修改父组件传过来的值
+props: {
+    str1: {
+        type: String,
+        default: ''
+    }
+}
+2、子组件直接使用父组件的值
+这种方式子可以直接修改父组件的数据
+this.$parent.str1
+this.$parent.$parent.str1
+
+3、依赖注入
+父组件中写
+provide(){
+    return {
+        val1: '父组件的内容'
+    }
+}
+自组件中写
+inject: ['val1']
+不让一级一级的传递
+
+4、后代传父
+子组件中写
+str2='1234'
+this.$emit('ziFun', this.str2)
+父组件中写
+<List @ziFun='fuBtn'></List>
+fuBtn(value) {
+    console.log(value)
+}
+
+5、父改子的值
+必须得赋值
+this.str2 = this.$children[0].val1
+ref 来修改
+<List ref='childVal'></List>
+this.$ref.childVal.str2 = '123'
+
+6、平辈直接传值
+中转bus.js
+import Vue from 'vue'
+export default new Vue();
+在子组件中
+import bus from '../..bus'
+bus.str3 = this.str3
+初始值：
+bus.$emit('chbtn', this.str3)
+接收值：
+bus.$on('chbtn', val =>{
+    console.log(val)
+})
+
+
+33、关于路由
+区别：
+1）关于找不到当前页面时发送请求问题
+history会给后端发送一次请求，而hash不会
+2）关于项目打包自测问题
+hash是可以看到内容的；  history默认情况是看不到内容的，是需要额外配置的
+3）表像不同，hash:#    history:/
+
+34、路由导航故障
+例如搜索，刷新当前页面
+解决：从写下router
+const routerPush = VueRouter.prototype.push
+VueRouter.prototype.push = function(location) {
+    return routerPush.call(this, location).catch(errpr => error)
+}
+
+35、导航守卫
+全局守卫：
+beforeEach: 路由进入之前
+afterEach: 路由进入之后
+
+路由独享守卫：可以卸载router的index.js里
+beforeEnter: 路由进入之前
+const routes = [
+    {
+        path: '/about',
+        name: 'about',
+        beforeEnter: function(to, from, next){
+            if (true) {
+                next() // 可以进去页面
+            } else {
+                next('/login')
+            }
+        },
+        component: () => import('../view/about')
+    }
+]
+
+组件内守卫：
+beforeRouteEnter:路由进入之前
+beforeRouteUpdate:路由更新之前
+beforeRouteLeave:路由离开之前

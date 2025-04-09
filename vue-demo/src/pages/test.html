@@ -9,16 +9,18 @@
     
 </body>
 <script>
-    let obj = {
-        name: '111',
-        set: {
-            cad: '222'
-        }
+    function treeToArr(data, arr) {
+        data.forEach((el) => {
+            const itat = JSON.parse(JSON.stringify(el))
+            arr.push(el)
+            delete itat
+            if (itat.length) {
+                treeToArr(itat, arr)
+            }
+        })
     }
-    let aa = obj
-    aa.set.cad = '2123'
-    aa.set = {}
-    console.log(aa)
-    console.log(obj)
+    var arr = [1,2,3,[4,5]]
+    const ss = treeToArr(arr, [])
+    console.log(ss)
 </script>
 </html>
