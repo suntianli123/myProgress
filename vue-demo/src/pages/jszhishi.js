@@ -134,3 +134,62 @@ config.plugins.delete('friendly')
 js:terser-webpack-plugin
 css: optimize-css-assets-webpack-plugin、mini-css-extract-plugin
 gzip压缩： compression-webpack-plugin
+
+
+11、数组的方法
+reduce、concat、every、filter、find、forEach、join、slice、sort、reverse、some、
+改变原数组：push、 shift 、pop、unshift、sort、splice、reverse
+
+不会改变原数组：concat、join、reduce、map、forEach、filter、slice、findIndex
+
+12、发布订阅者模式
+
+class EventAst {
+    constructor{
+        this.events = {}
+    }
+    on(event, call) {
+        if( typeof call !== 'function' ) {
+            return
+        }
+        if (!this.events[event]){
+            this.events[event] = []
+        }
+        this.events[event].push(call)
+    }
+    defineEmits(event, ...args){
+        if (this.events[event]) {
+            this.events[event].forEach(call => {
+                call.apply(null, args)
+            })
+        }
+    }
+    off(event, call) {
+        if (this.events[event]) {
+            if (call){
+                this.events[event] = this.events[event].filter(ite => ite !== call)
+            }
+        }else {
+            delete this.events[event]
+        }
+    }
+    oncuechange(event, call) {
+        const wrap = (...args) => {
+            call(...args);
+            this.off(event, wrap)
+        }
+        this.on(event, wrap)
+    }
+}
+const emitFun = new EventAst;
+const handleUp = (data) => {
+    console.log('111', data)
+}
+const handleDelete = (data) => {
+    console.log('删除', data)
+}
+emitFun.on('update', handleUp)
+emitFun.on('delete', handleDelete)
+emitFun.emit('update', {id: 1, name: 'qqq'})
+emitFun.emit('delete')
+emitFun.off('update', {id: 1})
